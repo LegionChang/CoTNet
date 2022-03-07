@@ -49,6 +49,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def setup_model():
     model = create_model(
         cfg.model.name,
@@ -63,6 +64,7 @@ def setup_model():
         bn_momentum=cfg.BN.bn_momentum if 'bn_momentum' in cfg.BN else None,
         bn_eps=cfg.BN.bn_eps if 'bn_eps' in cfg.BN else None,
         checkpoint_path=cfg.model.initial_checkpoint)
+
     data_config = resolve_data_config(cfg, model=model)
 
     flops_count, params_count = get_model_complexity_info(model, data_config['input_size'], as_strings=True,
@@ -88,6 +90,7 @@ def setup_resume(local_rank, model, optimizer):
     if cfg.model.resume:
         resume_epoch = resume_checkpoint(
             model, cfg.model.resume,
+            # cfg.model.no_resume_opt 防止在恢复模型时恢复优化器状态
             optimizer=None if cfg.model.no_resume_opt else optimizer,
             loss_scaler=None if cfg.model.no_resume_opt else loss_scaler,
             log_info=local_rank == 0)
@@ -210,20 +213,25 @@ def setup_loss(mixup_active):
 
 def setup_env(args):
     if args.folder is not None:
+        # 从yaml文件中读取配置参数
         cfg.merge_from_file(os.path.join(args.folder, 'config.yaml'))
     cfg.root_dir = args.folder
 
+    # 设置一个默认日志，路径为 cfg.root_dir/cfg.logger_name.txt
     setup_default_logging()
 
     world_size = 1
     rank = 0  # global rank
+    # cfg.distributed = true(多卡)/false（单卡）
     cfg.distributed = torch.cuda.device_count() > 1
 
     if cfg.distributed:
         torch.cuda.set_device(args.local_rank)
+        # 初始化方式：环境变量（来进行分布式通信）
         torch.distributed.init_process_group(backend='nccl', init_method='env://')
         world_size = torch.distributed.get_world_size()
         rank = torch.distributed.get_rank()
+    # 一个GPU上一个进程
     cfg.num_gpus = world_size
 
     pop_unused_value(cfg)
@@ -309,6 +317,7 @@ def main():
     model, data_config = setup_model()
     optimizer = create_optimizer(cfg, model)
 
+    # 半精度加速训练
     amp_autocast = suppress  # do nothing
     
     model, model_ema, optimizer, resume_epoch, loss_scaler = setup_resume(args.local_rank, model, optimizer)
