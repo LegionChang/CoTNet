@@ -2,7 +2,7 @@ seed: 1.0
 amp: False
 
 data_loader:
-  data_path: 'E:/Dataset/PlantDoc-Dataset/'
+  data_path: '~/pytorch-Learning-from-bilibili/data_set/PlantDoc-Dataset/'
   batch_size: 8
   vbatch_size: 128
   workers: 6
