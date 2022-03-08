@@ -2,8 +2,8 @@ seed: 1.0
 amp: False
 
 data_loader:
-  data_path: '../../../work/'
-  batch_size: 80
+  data_path: 'E:/Dataset/PlantDoc-Dataset/'
+  batch_size: 8
   vbatch_size: 128
   workers: 6
   pin_mem: False

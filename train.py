@@ -145,6 +145,7 @@ def setup_scheduler(optimizer, resume_epoch):
 
 def setup_loader(data_config):
     train_dir = os.path.join(cfg.data_loader.data_path, 'train')
+    print(cfg.data_loader.data_path)
     assert os.path.exists(train_dir)
     dataset_train = Dataset(train_dir)
 

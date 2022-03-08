@@ -3,7 +3,7 @@ amp: False
 
 data_loader:
   data_path: '/export/dataset/imagenet'
-  batch_size: 80
+  batch_size: 16
   vbatch_size: 128
   workers: 6
   pin_mem: False
